@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Stock Screener - Smart Money Club</title>
+  <style>
+    :root {
+      --primary: #000000;
+      --text-muted: #666666;
+      --card-bg: #ffffff;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #ffffff;
+      color: var(--primary);
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      padding: 28px 20px;
+      border-bottom: 1px solid #eaeaea;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .brand-container {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .brand {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #111;
+      text-decoration: none;
+      letter-spacing: -0.3px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.1;
+    }
+    .tagline {
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 4px;
+      letter-spacing: 0.2px;
+    }
+    .container {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.7rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    /* Filter Dropdown */
+    .filter-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    select {
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      min-width: 220px;
+    }
+    .screener-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+    .screener-card {
+      background-color: var(--card-bg);
+      color: var(--card-text);
+      padding: 24px;
+      border-radius: 14px;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid var(--table-border);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), inset 0 0 1px rgba(255, 255, 255, 0.4);
+      transition: all 0.25s ease, background-color 0.3s, color 0.3s;
+      min-height: 85px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .screener-card:hover {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+    .screener-card h3 {
+      font-size: 1.05em;
+      margin: 0;
+      font-weight: 500;
+      color: #222;
+      line-height: 1.4;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255, 255, 255, 0.98);
+      color: var(--primary);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 40px 20px;
+      overflow-y: auto;
+      z-index: 999;
+    }
+    .modal.active {
+      display: flex;
+    }
+    .modal h2 {
+      font-size: 1.4em;
+      margin-bottom: 10px;
+      text-align: left;
+      padding-left: 10px;
+      margin-top: 40px;
+    }
+    .modal button {
+      margin-top: 10px;
+      padding: 10px 16px;
+      border: none;
+      background: var(--primary);
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal button:hover {
+      opacity: 0.9;
+    }
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: none;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .table-container {
+      overflow-x: auto;
+      width: 100%;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      font-size: 0.95em;
+      min-width: 600px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background: #f1f1f1;
+    }
+    html, body {
+    height: 100%;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-body {
+  flex: 1; /* fills available space so footer is pushed down */
+}
+
+.footer {
+  text-align: center;
+  padding: 8px 0;
+  font-size: 0.8em;
+  color: #666;
+  border-top: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+}
+
+    .main-body {
+      background-color: #f9f9f9;
+      min-height: 100vh;
+    }
+    .scrollable-table {
+      max-height: 500px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    /* Hide the default checkbox */
+.symbol-checkbox {
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  cursor: pointer;
+  margin: 0; /* remove extra spacing */
+}
+
+.rank-cell {
+  display: flex;
+  align-items: center;
+  gap: 5px; /* space between checkbox and rank number */
+}
+
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="brand-container">
+    <a href="{% url 'home' %}" class="brand">Smart Money Club Screeners</a>
+  </div>
+</header>
+
+<div class="main-body">
+  <div class="container">
+    <h1>Select a Screener</h1>
+
+
+    <!-- Filter Dropdown -->
+    <div class="filter-container">
+      <form method="get">
+        <select name="category" onchange="this.form.submit()">
+          {% for cat in categories %}
+            <option value="{{ cat }}" {% if selected_category == cat %}selected{% endif %}>
+              {{ cat }}
+            </option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+
+    <!-- Screener Grid -->
+    <div class="screener-grid">
+      {% for key, screener in screeners.items %}
+        <form method="post" style="all: unset;">
+          {% csrf_token %}
+          <input type="hidden" name="screener_name" value="{{ key }}">
+          <button type="submit" style="all: unset; width: 100%;">
+            <div class="screener-card" data-category="{{ screener.category }}">
+              <h3>{{ screener.name }}</h3>
+            </div>
+          </button>
+        </form>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if selected_screener %}
+  <!-- Modal -->
+  <div class="modal active" id="modal">
+    <button onclick="closeModal()" class="back-button">← Back</button>
+    <div style="max-width: 1000px; width: 100%;">
+      <h2>{{ selected_screener_name }}</h2>
+      <p style="color: var(--text-muted);">Last Updated: {{ last_updated|date:"h:i A e" }}</p>
+
+      <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+  <label>From: <input type="number" id="rangeStart" style="width: 60px; padding: 5px;"></label>
+  <label>To: <input type="number" id="rangeEnd" style="width: 60px; padding: 5px;"></label>
+  <button onclick="copyRangeSymbols()">📄 Copy Range Symbols</button>
+</div>
+
+<!-- Second row: Other copy/download buttons -->
+<div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
+  <button onclick="downloadCSV()">⬇️ Download CSV</button>
+  <button onclick="copySymbols()">📄 Copy All Symbols</button>
+  <button onclick="copySelectedSymbols()">📄 Copy Selected Symbols</button>
+</div>
+      <br>
+
+      {% if stock_list %}
+      <div class="table-container">
+        <div class="scrollable-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Symbol</th>
+                <th>% Change</th>
+                <th>Price</th>
+                <th>Volume</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in stock_list %}
+              <tr>
+                <td data-rank="{{ row.rank }}" class="rank-cell"><input type="checkbox" class="symbol-checkbox" value="{{ row.stock_name }}">{{ row.rank }}</td>
+                <td>{{ row.stock_name }}</td>
+                <td>{{ row.percent_change }}%</td>
+                <td>{{ row.current_price }}</td>
+                <td>{{ row.trade_volume }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <p>No results found.</p>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="footer">
+    © 2025 Smart Money Club. All rights reserved.
+  </div>
+</div>
+
+<script>
+  function closeModal() {
+    document.getElementById('modal')?.classList.remove('active');
+    window.scrollTo(0, 0);
+  }
+  function copyTable() {
+    const table = document.querySelector("table");
+    if (!table) return alert("No table to copy.");
+    let range = document.createRange();
+    range.selectNode(table);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();
+    alert("📋 Table copied to clipboard!");
+  }
+  function downloadCSV() {
+    const table = document.querySelector("table");
+    if (!table) return alert("No table to download.");
+    let csv = "";
+    const rows = table.querySelectorAll("tr");
+    rows.forEach(row => {
+      const cols = row.querySelectorAll("th, td");
+      const rowData = Array.from(cols).map(cell => '"' + cell.innerText.trim().replace(/"/g, '""') + '"');
+      csv += rowData.join(",") + "\n";
+    });
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "screener_data.csv";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+  function copySymbols() {
+    const table = document.querySelector("table");
+    if (!table) return alert("No table to copy.");
+    const rows = table.querySelectorAll("tbody tr");
+    let symbols = Array.from(rows).map(row => row.cells[1]?.innerText.trim());
+    navigator.clipboard.writeText(symbols.join(", ")).then(() => {
+      alert("📄 Symbols copied!");
+    });
+  }
+</script>
+<script>
+function copySelectedSymbols() {
+    const checkboxes = document.querySelectorAll('.symbol-checkbox:checked');
+    const symbols = Array.from(checkboxes).map(cb => cb.value);
+
+    if (symbols.length === 0) {
+        alert("No symbols selected.");
+        return;
+    }
+
+    navigator.clipboard.writeText(symbols.join(', ')).then(() => {
+        alert(`Copied ${symbols.length} symbol(s) to clipboard.`);
+    });
+}
+
+
+</script>
+<script>
+function copyRangeSymbols() {
+  const start = parseInt(document.getElementById('rangeStart').value);
+  const end = parseInt(document.getElementById('rangeEnd').value);
+
+  if (isNaN(start) || isNaN(end) || start < 1 || end < start) {
+    alert("Please enter a valid range.");
+    return;
+  }
+
+  const rows = document.querySelectorAll("tbody tr");
+  let symbols = [];
+
+  rows.forEach(row => {
+    const rank = parseInt(row.cells[0]?.innerText.trim());
+    if (rank >= start && rank <= end) {
+      symbols.push(row.cells[1]?.innerText.trim());
+    }
+  });
+
+  if (symbols.length === 0) {
+    alert(`No symbols found in range ${start} to ${end}`);
+    return;
+  }
+
+  navigator.clipboard.writeText(symbols.join(", ")).then(() => {
+    alert(`Copied ${symbols.length} symbol(s) from Rank ${start} to ${end}`);
+  });
+}
+</script>
+</body>
+</html>
